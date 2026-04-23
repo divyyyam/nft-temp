@@ -64,7 +64,7 @@ export default function Marketplace() {
             <NFTCard
               key={item.tokenId}
               item={item}
-              showBuyButton={account && account.toLowerCase() !== item.seller.toLowerCase()}
+              showBuyButton={!account || account.toLowerCase() !== item.seller.toLowerCase()}
               onBuy={() => handleBuy(item)}
               txPending={txPending}
             />
