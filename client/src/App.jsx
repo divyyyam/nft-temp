@@ -1,121 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+/**
+ * App.jsx
+ * Root component. Sets up routing and wraps everything in Web3Provider.
+ */
 
-function App() {
-  const [count, setCount] = useState(0)
+import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { Web3Provider, useWeb3 } from "./context/Web3Context.jsx";
+import Marketplace  from "./pages/Marketplace.jsx";
+import CreateNFT    from "./pages/CreateNFT.jsx";
+import MyNFTs       from "./pages/MyNFTs.jsx";
+import { shortenAddress } from "./utils/wallet.js";
+
+function NavBar() {
+  const { account, balance, isCorrectNetwork, connect, isConnecting, targetChainId, chainId } = useWeb3();
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <header className="navbar">
+      <div className="navbar-brand">⬡ NFT Market</div>
+      <nav className="navbar-links">
+        <NavLink to="/"        className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>Marketplace</NavLink>
+        <NavLink to="/create"  className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>Create</NavLink>
+        <NavLink to="/my-nfts" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>My NFTs</NavLink>
+      </nav>
+      <div className="navbar-wallet">
+        {!isCorrectNetwork && chainId && (
+          <span className="network-warning">⚠ Wrong network (need chain {targetChainId})</span>
+        )}
+        {account ? (
+          <div className="wallet-info">
+            <span className="wallet-balance">{balance} ETH</span>
+            <span className="wallet-address">{shortenAddress(account)}</span>
+          </div>
+        ) : (
+          <button className="btn-connect" onClick={connect} disabled={isConnecting}>
+            {isConnecting ? "Connecting…" : "Connect Wallet"}
+          </button>
+        )}
+      </div>
+    </header>
+  );
 }
 
-export default App
+function AppRoutes() {
+  return (
+    <BrowserRouter>
+      <NavBar />
+      <main className="main-content">
+        <Routes>
+          <Route path="/"        element={<Marketplace />} />
+          <Route path="/create"  element={<CreateNFT />} />
+          <Route path="/my-nfts" element={<MyNFTs />} />
+        </Routes>
+      </main>
+    </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <Web3Provider>
+      <AppRoutes />
+    </Web3Provider>
+  );
+}
